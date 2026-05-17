@@ -54,7 +54,9 @@ async function startServer() {
       console.log("Seeding complete.");
     }
   } catch (err) {
-    console.error("Failed to connect to MongoDB:", err);
+    console.error("CRITICAL ERROR: Failed to connect to MongoDB Atlas!");
+    console.error("Error details:", err);
+    console.error("Please verify your MONGODB_URI environment variable and MongoDB Atlas Network Access (0.0.0.0/0).");
   }
 
   // --- API Routes ---

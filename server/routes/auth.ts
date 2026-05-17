@@ -40,6 +40,7 @@ router.post("/register", async (req, res) => {
       },
     });
   } catch (err: any) {
+    console.error("Vercel Debug - Registration Error:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -77,6 +78,7 @@ router.post("/login", async (req, res) => {
       },
     });
   } catch (err: any) {
+    console.error("Vercel Debug - Login Error:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
