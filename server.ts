@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import dotenv from "dotenv";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import authRoutes from "./server/routes/auth.ts";
@@ -13,15 +14,29 @@ import Lead, { LeadStatus, LeadSource } from "./server/models/Lead.ts";
 // Load environment variables
 dotenv.config();
 
-const isProd = process.env.NODE_ENV === "production";
+// Better production check for various environments
+const isProd = process.env.NODE_ENV === "production" || 
+               process.env.VITE === "true" || 
+               process.env.K_SERVICE !== undefined;
+
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   const app = express();
 
   // Middleware
+  app.use(cors({
+    origin: true,
+    credentials: true
+  }));
   app.use(express.json());
   app.use(cookieParser());
+
+  // Logging middleware for debugging
+  app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+    next();
+  });
 
   // Database Connection
   const MONGODB_URI = (process.env.MONGODB_URI || "").trim();

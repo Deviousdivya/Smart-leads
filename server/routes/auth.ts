@@ -1,21 +1,26 @@
 import express from "express";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 import User, { UserRole } from "../models/User.ts";
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
 
 router.post("/register", async (req, res) => {
+  console.log("POST /api/auth/register request received for:", req.body.email);
   try {
     const { name, email, password, role } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
+      console.log("User already exists:", email);
       return res.status(400).json({ success: false, message: "User already exists" });
     }
 
     // Check DB connection before creating
+    console.log("DB Connection State:", mongoose.connection.readyState);
     if (mongoose.connection.readyState !== 1) {
+      console.error("DB NOT CONNECTED during registration attempt");
       throw new Error("Database is not connected. Please check MONGODB_URI and Network Access settings.");
     }
 
@@ -51,16 +56,20 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
+  console.log("POST /api/auth/login request received for:", req.body.email);
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
     if (!user) {
+      console.log("User not found:", email);
       return res.status(400).json({ success: false, message: "Invalid credentials (user not found)" });
     }
 
     // Check DB connection
+    console.log("DB Connection State (Login):", mongoose.connection.readyState);
     if (mongoose.connection.readyState !== 1) {
+      console.error("DB NOT CONNECTED during login attempt");
       throw new Error("Database is not connected.");
     }
 
