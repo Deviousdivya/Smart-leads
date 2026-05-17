@@ -26,6 +26,12 @@ async function startServer() {
   // Database Connection
   const MONGODB_URI = process.env.MONGODB_URI;
   
+  if (MONGODB_URI) {
+    console.log("MONGODB_URI detected (prefix: " + MONGODB_URI.substring(0, 15) + "...)");
+  } else {
+    console.log("WARNING: MONGODB_URI is NOT defined in environment variables!");
+  }
+  
   try {
     if (MONGODB_URI) {
       await mongoose.connect(MONGODB_URI);
@@ -60,6 +66,25 @@ async function startServer() {
   }
 
   // --- API Routes ---
+
+  // Health check with DB status
+  app.get("/api/status", async (req, res) => {
+    const dbStatus = mongoose.connection.readyState;
+    const statusMap = {
+      0: "disconnected",
+      1: "connected",
+      2: "connecting",
+      3: "disconnecting",
+    };
+    
+    res.json({ 
+      status: "ok", 
+      database: statusMap[dbStatus as keyof typeof statusMap] || "unknown",
+      mode: isProd ? "production" : "development",
+      usingAtlas: Boolean(process.env.MONGODB_URI)
+    });
+  });
+
   app.use("/api/auth", authRoutes);
   app.use("/api/leads", leadsRoutes);
 
@@ -85,10 +110,6 @@ async function startServer() {
     } catch (err: any) {
       res.status(500).json({ success: false, message: err.message });
     }
-  });
-
-  app.get("/api/health", (req: Request, res: Response) => {
-    res.json({ status: "ok", mode: isProd ? "production" : "development" });
   });
 
   // Centralized Error Handling Middleware

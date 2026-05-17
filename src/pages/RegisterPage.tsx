@@ -19,9 +19,18 @@ export default function RegisterPage() {
   const [role, setRole] = useState<UserRole>(UserRole.SALES);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [dbStatus, setDbStatus] = useState<string | null>(null);
   
   const navigate = useNavigate();
   const { setUser } = useAuthStore();
+
+  React.useEffect(() => {
+    api.get("/status").then(res => {
+      setDbStatus(res.data.database);
+    }).catch(() => {
+      setDbStatus("unreachable");
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +55,16 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 dark:bg-gray-900 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
+            {dbStatus && (
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
+                dbStatus === "connected" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+              }`}>
+                DB: {dbStatus}
+              </span>
+            )}
+          </div>
           <CardDescription>
             Enter your information to get started
           </CardDescription>
