@@ -41,7 +41,9 @@ export default function LoginPage() {
         navigate("/dashboard");
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Invalid credentials");
+      const message = err.response?.data?.message || err.message || "Login failed";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

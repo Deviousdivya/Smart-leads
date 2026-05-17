@@ -24,24 +24,31 @@ async function startServer() {
   app.use(cookieParser());
 
   // Database Connection
-  const MONGODB_URI = process.env.MONGODB_URI;
+  const MONGODB_URI = (process.env.MONGODB_URI || "").trim();
   
   if (MONGODB_URI) {
-    console.log("MONGODB_URI detected (prefix: " + MONGODB_URI.substring(0, 15) + "...)");
+    console.log("MONGODB_URI detected (length: " + MONGODB_URI.length + ")");
   } else {
-    console.log("WARNING: MONGODB_URI is NOT defined in environment variables!");
+    console.log("WARNING: MONGODB_URI is empty or NOT defined. Using fallback...");
   }
   
   try {
     if (MONGODB_URI) {
-      await mongoose.connect(MONGODB_URI);
+      console.log("Connecting to MongoDB Atlas...");
+      await mongoose.connect(MONGODB_URI, {
+        serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      });
       console.log("Successfully connected to MongoDB Atlas");
     } else {
-      console.log("No MONGODB_URI found. Initializing MongoMemoryServer for development...");
-      const mongod = await MongoMemoryServer.create();
-      const uri = mongod.getUri();
-      await mongoose.connect(uri);
-      console.log("Connected to MongoMemoryServer at:", uri);
+      console.log("Initializing MongoMemoryServer for development/fallback...");
+      try {
+        const mongod = await MongoMemoryServer.create();
+        const uri = mongod.getUri();
+        await mongoose.connect(uri);
+        console.log("Connected to MongoMemoryServer at:", uri);
+      } catch (memErr) {
+        console.error("FATAL: Failed to start MongoMemoryServer fallback:", memErr);
+      }
     }
 
     // Seed initial data if database is empty (works for both Atlas and local fallback)

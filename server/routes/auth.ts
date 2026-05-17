@@ -14,6 +14,11 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ success: false, message: "User already exists" });
     }
 
+    // Check DB connection before creating
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error("Database is not connected. Please check MONGODB_URI and Network Access settings.");
+    }
+
     const user = await User.create({
       name,
       email,
@@ -51,7 +56,12 @@ router.post("/login", async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ success: false, message: "Invalid credentials" });
+      return res.status(400).json({ success: false, message: "Invalid credentials (user not found)" });
+    }
+
+    // Check DB connection
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error("Database is not connected.");
     }
 
     const isMatch = await user.comparePassword(password);

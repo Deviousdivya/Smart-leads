@@ -2,5 +2,7 @@
   "name": "Smart Leads Dashboard",
   "description": "A full-stack Lead Management Dashboard with JWT authentication, advanced filtering, RBAC, and CSV export functionality, built with React, Express, and MongoDB.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
